@@ -141,6 +141,10 @@ def main():
 
     args = parser.parse_args()
     
+    # Synchronize img_size temporal dimension with sequence_length
+    if len(args.img_size) > 3:
+        args.img_size[3] = args.sequence_length
+    
     pl.seed_everything(args.seed)
     
     # DataModule

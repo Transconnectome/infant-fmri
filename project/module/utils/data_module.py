@@ -131,6 +131,7 @@ class fMRIDataModule(pl.LightningDataModule):
                     final_dict[subject]=[sex,target]
             
         elif self.hparams.dataset_name == "ABCD":
+            img_root = os.path.join(self.hparams.image_path, 'img')
             subject_list = [subj[4:] for subj in os.listdir(img_root)]
             
             meta_data = pd.read_csv(os.path.join(self.hparams.image_path, "metadata", "ABCD_phenotype_total.csv"))
@@ -151,6 +152,7 @@ class fMRIDataModule(pl.LightningDataModule):
                     final_dict[subject]=[sex,target]
             
         elif self.hparams.dataset_name == "UKB":
+            img_root = os.path.join(self.hparams.image_path, 'img')
             if self.hparams.downstream_task == 'sex': task_name = 'sex'
             elif self.hparams.downstream_task == 'age': task_name = 'age'
             elif self.hparams.downstream_task == 'int_fluid' : task_name = 'fluid'
@@ -171,6 +173,7 @@ class fMRIDataModule(pl.LightningDataModule):
                     continue 
         
         elif self.hparams.dataset_name == "dHCP":
+            img_root = os.path.join(self.hparams.image_path, 'img')
             subject_list = os.listdir(img_root)
             
             if 'sex' in self.hparams.downstream_task or 'age' in self.hparams.downstream_task:
@@ -212,6 +215,7 @@ class fMRIDataModule(pl.LightningDataModule):
             print(f"DEBUG: Dummy dict size: {len(final_dict)}")
 
         elif self.hparams.dataset_name in ["Music", "Narratives"]:
+             img_root = os.path.join(self.hparams.image_path, 'img')
              subject_list = os.listdir(img_root)
              for subject in subject_list:
                  # Assume all folders in img_root are subjects
