@@ -1,10 +1,11 @@
-<div align="center">    
- 
-# SwiFT: Swin 4D fMRI Transformer
+<div align="center">
+
+# SwiFT: Swin 4D fMRI Transformer for Infant Neurodevelopment
 
 <a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/-Python 3.9+-blue?style=for-the-badge&logo=python&logoColor=white"></a>
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/-PyTorch 1.12+-ee4c2c?style=for-the-badge&logo=pytorch&logoColor=white"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning 1.7+-792ee5?style=for-the-badge&logo=pytorchlightning&logoColor=white"></a>
+<a href="https://www.overleaf.com/project/67810696ae58aa3fbf923ca7"><img alt="Paper" src="https://img.shields.io/badge/-📄 Paper-orange?style=for-the-badge&logo=overleaf&logoColor=white"></a>
 
 </div>
 
@@ -20,6 +21,61 @@ This project is a collaborative research effort between Seoul National Universit
   - Professor Taesup Moon: tsmoon@snu.ac.kr
   - Professor Jiook Cha: connectome@snu.ac.kr
 
+## 📄&nbsp;&nbsp;Paper Synchronization
+
+This repository includes integrated synchronization with our Overleaf manuscript: **"Swin fMRI Transformer Predicts Early Neurodevelopmental Outcomes from Neonatal fMRI"** (Patrick Styll, Dowon Kim, Jiook Cha).
+
+### Paper Overview
+Our current work extends SwiFT to predict neurodevelopmental outcomes from neonatal fMRI using the Developing Human Connectome Project (dHCP) dataset. The model predicts Bayley-III composite scores for cognitive, motor, and language development, leveraging both single-label and multi-label prediction strategies.
+
+### Sync Commands
+```bash
+# Check synchronization status
+./sync_paper.sh status
+
+# Pull latest changes from Overleaf
+./sync_paper.sh pull
+
+# Push local changes to Overleaf (after committing)
+./sync_paper.sh push
+
+# Get help
+./sync_paper.sh help
+```
+
+The paper content is maintained in the `paper/` directory with full bidirectional synchronization support.
+
+## 🏗️&nbsp;&nbsp;Architecture Overview
+
+SwiFT is a comprehensive deep learning framework for 4D fMRI analysis featuring:
+
+### Core Components
+- **4D Swin Transformer**: Hierarchical vision transformer adapted for spatiotemporal fMRI data
+- **Multi-Task Learning**: Supports classification, regression, and contrastive pretraining
+- **Scalable Training**: Distributed training with PyTorch Lightning and DDP support
+- **Dataset Agnostic**: Works with HCP, ABCD, UKB, dHCP, and custom datasets
+
+### Model Architecture
+```
+Input: (B, 1, 96, 96, 96, T) fMRI volumes
+  ↓
+4D Patch Embedding (6×6×6×1 patches)
+  ↓
+Multi-Stage Swin Transformer
+├── Stage 1: embed_dim=24, heads=3,  depth=2
+├── Stage 2: embed_dim=48, heads=6,  depth=2
+├── Stage 3: embed_dim=96, heads=12, depth=6
+└── Stage 4: embed_dim=192,heads=24, depth=2
+  ↓
+Task-Specific Heads (Classification/Regression/Embedding)
+```
+
+### Key Features
+- **Window-based 4D Attention**: Efficient spatiotemporal processing
+- **Contrastive Pretraining**: Self-supervised learning on large-scale data
+- **Data Augmentation**: MONAI-based 3D transformations
+- **Model Interpretability**: Integrated Gradients for attribution analysis
+- **Multi-Dataset Support**: Unified pipeline for diverse fMRI datasets
 
 > Effective usage of this repository requires learning a couple of technologies: [PyTorch](https://pytorch.org), [PyTorch Lightning](https://www.pytorchlightning.ai). Knowledge of some experiment logging frameworks like [Weights&Biases](https://wandb.com), [Neptune](https://neptune.ai) is also recommended.
 
@@ -31,6 +87,107 @@ You can easily run the following code to train a ViT model directly.
 ```bash
 bash scripts/tutorial.sh
  ```  
+## 🔧&nbsp;&nbsp;Codebase Structure
+
+This section provides a comprehensive overview of the repository organization and key components for developers and researchers.
+
+### Repository Organization
+
+```
+infant-fmri/
+├── paper/                          # 📄 Synchronized Overleaf manuscript
+│   ├── bookchapter.tex             # Main LaTeX source
+│   ├── img/                        # Paper figures (PDFs)
+│   └── llncs.cls                   # Springer LNCS class
+├── project/                        # 🧠 Main codebase
+│   ├── main.py                     # Training entry point
+│   └── module/
+│       ├── pl_classifier.py        # PyTorch Lightning module (33.9KB)
+│       ├── models/                 # Model architectures
+│       │   ├── swin4d_transformer_ver7.py  # 4D Swin Transformer (29.9KB)
+│       │   ├── patchembedding.py            # Patch embedding layer
+│       │   ├── clf_mlp.py & clf_mlp_v2.py   # Classification heads
+│       │   ├── reg_mlp.py                   # Regression head
+│       │   ├── emb_mlp.py                   # Contrastive embedding head
+│       │   └── utils.py                     # Model utilities
+│       └── utils/                  # Utility modules
+│           ├── data_module.py               # PyTorch Lightning DataModule
+│           ├── data_preprocess_and_load/
+│           │   ├── datasets.py              # Dataset classes (S1200, ABCD, UKB, dHCP)
+│           │   └── preprocessing.py         # fMRI preprocessing pipeline
+│           ├── losses.py                    # Loss functions (NT-Xent, Focal)
+│           ├── lr_scheduler.py              # Learning rate schedulers
+│           ├── metrics.py                   # Evaluation metrics
+│           └── neptune_utils.py             # Neptune logging utilities
+├── data/splits/                    # 📊 Dataset split definitions
+│   ├── S1200/                      # HCP S1200 splits
+│   ├── ABCD/                       # ABCD dataset splits
+│   ├── UKB/                        # UK Biobank splits
+│   ├── dHCP/                       # Developing HCP splits
+│   └── Dummy/                      # Test dataset splits
+├── pretrained_models/              # 🚀 Pre-trained checkpoints
+│   ├── contrastive_pretrained.ckpt # Multi-dataset pretrained model
+│   └── hcp_sex_classification.ckpt # HCP sex classification model
+├── sample_scripts/                 # 📜 Example training scripts
+├── test/                          # 🧪 Testing modules
+├── interpretation/                 # 🔍 Model interpretability tools
+├── envs/py39.yaml                 # 🐍 Conda environment
+├── sync_paper.sh                  # 🔄 Paper synchronization script
+└── export_DDP_vars.sh             # ⚡ Distributed training setup
+```
+
+### Key Modules Breakdown
+
+#### Core Training Pipeline
+- **`project/main.py`**: Main entry point with 100+ CLI arguments for dataset selection, model configuration, and training parameters
+- **`project/module/pl_classifier.py`**: Complete PyTorch Lightning training loop with support for:
+  - Multi-task learning (classification/regression/pretraining)
+  - Data augmentation (affine, noise, smoothing)
+  - Contrastive learning (NT-Xent + temporal contrastive)
+  - Subject-level evaluation and metric computation
+
+#### Model Architecture
+- **`swin4d_transformer_ver7.py`**: 4D hierarchical Swin Transformer
+  - 4D window-based multi-head self-attention
+  - Shifted windows for computational efficiency
+  - Configurable depths: [2, 2, 6, 2] stages
+  - Embedding dimensions: [24, 48, 96, 192]
+  - Support for gradient checkpointing
+
+#### Data Processing
+- **`datasets.py`**: Dataset classes for multiple neuroimaging datasets
+  - **S1200**: HCP 1200 subjects (healthy adults)
+  - **ABCD**: ~10K adolescents
+  - **UKB**: ~40K UK Biobank adults
+  - **dHCP**: ~600 developing infants (0-5 years)
+  - **Dummy**: Synthetic data for testing
+- **`preprocessing.py`**: Converts raw NIfTI to optimized torch checkpoints
+  - Z-normalization and minmax scaling
+  - Float16 conversion for storage efficiency
+  - Per-volume checkpoint saving
+
+#### Advanced Features
+- **Contrastive Learning**: Instance contrastive + local-local temporal
+- **Interpretability**: Integrated Gradients with noise tunneling
+- **Distributed Training**: Multi-GPU/multi-node support
+- **Hyperparameter Optimization**: Optuna integration
+- **Flexible Evaluation**: Subject-level aggregation with multiple metrics
+
+### Supported Tasks & Datasets
+
+| Task Type | Datasets | Targets | Metrics |
+|-----------|----------|---------|---------|
+| **Classification** | S1200, ABCD, UKB, dHCP | Sex, Risk | Accuracy, Balanced Acc, AUROC |
+| **Regression** | S1200, ABCD, UKB, dHCP | Age, Cognitive Scores | MSE, MAE, Pearson |
+| **Multi-task** | Any combination | Multiple targets | Per-task metrics |
+| **Pretraining** | All datasets | Self-supervised | Contrastive loss |
+
+### Environment & Dependencies
+- **Python 3.9.12** with PyTorch 2.0.1
+- **Key Libraries**: PyTorch Lightning, MONAI, nibabel, nilearn
+- **Hardware**: Multi-GPU training (tested on 8x RTX 3090)
+- **Storage**: Optimized for large-scale fMRI datasets
+
 ---
 
 ## 1. Description
