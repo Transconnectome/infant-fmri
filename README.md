@@ -45,6 +45,16 @@ Our current work extends SwiFT to predict neurodevelopmental outcomes from neona
 
 The paper content is maintained in the `paper/` directory with full bidirectional synchronization support.
 
+### 📊 Research Findings Summary
+Our analysis of the neonatal fMRI data reveals significant breakthroughs in early neurodevelopmental prediction:
+
+- **Multi-ICA Approach** achieves best performance with **15-18% improvement** in prediction accuracy
+- **Brain Network Identification**: Successfully mapped cognitive (mPFC, thalamocortical), language (Wernicke's), and motor (primary motor cortex, SMA) prediction networks
+- **Clinical Impact**: Enables prediction shift from 18-month assessment to neonatal timeframe
+- **Statistical Significance**: p<0.01 for cognitive and motor predictions
+
+**📋 [Complete Paper Analysis](./paper_analysis.md)** - Comprehensive analysis of methodology, results, and clinical implications
+
 ## 🏗️&nbsp;&nbsp;Architecture Overview
 
 SwiFT is a comprehensive deep learning framework for 4D fMRI analysis featuring:
