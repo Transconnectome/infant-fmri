@@ -465,12 +465,14 @@ class Dummy(BaseDataset):
 
     def __getitem__(self,idx):
         _, subj, _, sequence_length = self.data[idx]
-        y = torch.randn(( 1, 96, 96, 96, sequence_length),dtype=torch.float16) #self.y[seq_idx]
+        # Use simple default if img_size not set, but it should be passed via kwargs -> BaseDataset
+        h, w, d = self.img_size[0], self.img_size[1], self.img_size[2]
+        y = torch.randn(( 1, h, w, d, sequence_length),dtype=torch.float32) #self.y[seq_idx]
         sex = torch.randint(0,2,(1,)).float()
         target = torch.randint(0,2,(1,)).float()
 
         if self.contrastive:
-            rand_y = torch.randn(( 1, 96, 96, 96, sequence_length),dtype=torch.float16)
+            rand_y = torch.randn(( 1, h, w, d, sequence_length),dtype=torch.float32)
             return {
                 "fmri_sequence": (y, rand_y),
                 "subject_name": subj,
@@ -485,3 +487,141 @@ class Dummy(BaseDataset):
                     "TR": 0,
                     "sex": sex,
                     } 
+
+class Music(BaseDataset):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _set_data(self, root, subject_dict):
+        data = []
+        img_root = os.path.join(root, 'img')
+        
+        for i, subject in enumerate(subject_dict):
+            # Music dataset might not have target/sex in the same way, adapting generic placeholder
+            if subject in subject_dict:
+                 sex, target = subject_dict[subject]
+            else:
+                 sex, target = 0, 0 # Default if not in dict
+            
+            subject_path = os.path.join(img_root, subject)
+            if not os.path.exists(subject_path): continue
+            
+            num_frames = len(glob.glob(os.path.join(subject_path, 'frame_*.pt')))
+            session_duration = num_frames - self.sample_duration + 1
+            
+            for start_frame in range(0, session_duration, self.stride):
+                data_tuple = (i, subject, subject_path, start_frame, self.stride, num_frames, target, sex)
+                data.append(data_tuple)
+        
+        if self.train:
+             # Dummy target values if not strictly regression
+             self.target_values = np.array([tup[6] for tup in data]).reshape(-1, 1)
+        return data
+
+    def __getitem__(self, index):
+        # Reusing similar logic to S1200/ABCD but adapted for Music if needed
+        _, subject, subject_path, start_frame, sequence_length, num_frames, target, sex = self.data[index]
+        
+        if self.contrastive:
+            y, rand_y = self.load_sequence(subject_path, start_frame, sequence_length)
+            # Padding/Permuting logic as per other datasets
+            background_value = y.flatten()[0]
+            y = y.permute(0,4,1,2,3)
+            # Assuming standard MNI or similar size, apply padding if needed. 
+            # Checking previous datasets, padding is specific to registration.
+            # Using generic padding for now, consistent with others.
+            y = torch.nn.functional.pad(y, (6, 6, 0, 0, 9, 9), value=background_value) 
+            y = y.permute(0,2,3,4,1)
+            
+            background_value = rand_y.flatten()[0]
+            rand_y = rand_y.permute(0,4,1,2,3)
+            rand_y = torch.nn.functional.pad(rand_y, (6, 6, 0, 0, 9, 9), value=background_value)
+            rand_y = rand_y.permute(0,2,3,4,1)
+            
+            return {
+                "fmri_sequence": (y, rand_y),
+                "subject_name": subject,
+                "target": target,
+                "TR": start_frame,
+                "sex": sex
+            }
+        else:
+            y = self.load_sequence(subject_path, start_frame, sequence_length, num_frames)
+            background_value = y.flatten()[0]
+            y = y.permute(0,4,1,2,3)
+            y = torch.nn.functional.pad(y, (6, 6, 0, 0, 9, 9), value=background_value)
+            y = y.permute(0,2,3,4,1)
+            
+            return {
+                "fmri_sequence": y,
+                "subject_name": subject,
+                "target": target,
+                "TR": start_frame,
+                "sex": sex,
+            }
+
+class Narratives(BaseDataset):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def _set_data(self, root, subject_dict):
+        data = []
+        img_root = os.path.join(root, 'img')
+        
+        for i, subject in enumerate(subject_dict):
+            # Music dataset might not have target/sex in the same way, adapting generic placeholder
+            if subject in subject_dict:
+                 sex, target = subject_dict[subject]
+            else:
+                 sex, target = 0, 0 # Default if not in dict
+            
+            subject_path = os.path.join(img_root, subject)
+            if not os.path.exists(subject_path): continue
+            
+            num_frames = len(glob.glob(os.path.join(subject_path, 'frame_*.pt')))
+            session_duration = num_frames - self.sample_duration + 1
+            
+            for start_frame in range(0, session_duration, self.stride):
+                data_tuple = (i, subject, subject_path, start_frame, self.stride, num_frames, target, sex)
+                data.append(data_tuple)
+        
+        if self.train:
+             self.target_values = np.array([tup[6] for tup in data]).reshape(-1, 1)
+        return data
+
+    def __getitem__(self, index):
+        _, subject, subject_path, start_frame, sequence_length, num_frames, target, sex = self.data[index]
+        
+        if self.contrastive:
+            y, rand_y = self.load_sequence(subject_path, start_frame, sequence_length)
+            background_value = y.flatten()[0]
+            y = y.permute(0,4,1,2,3)
+            y = torch.nn.functional.pad(y, (6, 6, 0, 0, 9, 9), value=background_value) 
+            y = y.permute(0,2,3,4,1)
+            
+            background_value = rand_y.flatten()[0]
+            rand_y = rand_y.permute(0,4,1,2,3)
+            rand_y = torch.nn.functional.pad(rand_y, (6, 6, 0, 0, 9, 9), value=background_value)
+            rand_y = rand_y.permute(0,2,3,4,1)
+            
+            return {
+                "fmri_sequence": (y, rand_y),
+                "subject_name": subject,
+                "target": target,
+                "TR": start_frame,
+                "sex": sex
+            }
+        else:
+            y = self.load_sequence(subject_path, start_frame, sequence_length, num_frames)
+            background_value = y.flatten()[0]
+            y = y.permute(0,4,1,2,3)
+            y = torch.nn.functional.pad(y, (6, 6, 0, 0, 9, 9), value=background_value)
+            y = y.permute(0,2,3,4,1)
+            
+            return {
+                "fmri_sequence": y,
+                "subject_name": subject,
+                "target": target,
+                "TR": start_frame,
+                "sex": sex,
+            } 

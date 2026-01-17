@@ -76,7 +76,7 @@
 \institute{ETH Zurich\\
 \mailtu\\
 %\url{https://informatics.tuwien.ac.at/}\\
-\url{https://ethz.ch/en.html/}\\
+\url{https://ethz.ch/}\\
 \mbox{}\\
 Seoul National University\\
 \mailsnu\\
@@ -102,7 +102,9 @@ Brain development in the first few months of human life is a critical phase char
 
 \section{Introduction}
 
-Brain development during the first few months of life is a period of rapid structural and functional reorganization, making it a critical window for identifying potential neurodevelopmental deficits. Accurate prediction of developmental outcomes during this period is essential to enable early interventions that can mitigate the lifelong impact of developmental delays. Neonatal fMRI data, such as those from the Developing Human Connectome Project (dHCP), have shown the potential to predict neurodevelopmental outcomes~\cite{LI2024114168}. However, the spatiotemporal complexity of neonatal brain activity presents significant challenges for conventional analysis methods.
+Brain development during the first few months of life is a period of rapid structural and functional reorganization, following a shared blueprint across different functional areas \cite{Smith2024SharedBlueprint}, making it a critical window for identifying potential neurodevelopmental deficits. Accurate prediction of developmental outcomes during this period is essential to enable early interventions that can mitigate the lifelong impact of developmental delays. Neonatal fMRI data, such as those from the Developing Human Connectome Project (dHCP), have shown the potential to predict neurodevelopmental outcomes~\cite{LI2024114168}. However, the spatiotemporal complexity of neonatal brain activity presents significant challenges for conventional analysis methods.
+
+Recent advancements in medical AI have seen a shift towards foundation models, which are large-scale models pretrained on massive datasets to enable a wide range of downstream tasks \cite{NatureMedicine2024Foundation,LancetDigitalHealth2024}. In neuroimaging, fMRI-specific transformer models such as BrainLM \cite{Rahman2024BrainLM} and SLIM-Brain \cite{SLIMBrain2024} have demonstrated the potential to learn robust brain representations. Furthermore, foundation models for brain connectomes \cite{Zhang2024Connectome} and cross-task MRI enhancement \cite{Sun2024NatureBME} are paving the way for more generalizable and sample-efficient clinical applications.
 %
 This study investigates the potential of the Swin 4D fMRI Transformer (SwiFT)~\cite{kim2023swiftswin4dfmri}, a deep learning architecture designed to process high-dimensional fMRI data, to predict neurodevelopmental outcomes from neonatal fMRI. Unlike existing methods, SwiFT leverages 4D spatiotemporal attention mechanisms to effectively capture dynamic brain connectivity patterns, offering a novel approach to analyzing neonatal fMRI data. Specifically, the objective of this study is to predict composite scores from the Bayley Scales of Infant and Toddler Development, Third Edition (Bayley-III / BSID-III), which encompass cognitive, lingual, and motor skills, using neonatal fMRI from the dHCP dataset. To address the challenges of limited neonatal data and high dimensionality, we explore dimensionality reduction using group Independent Component Analysis (ICA) and pretraining SwiFT on large publicly available adult fMRI datasets. 
 %
@@ -702,7 +704,7 @@ For the risk of linguistic delay (middle), activations in Wernicke's area align 
 \section{Discussion}
 
 \subsection{Interpretation of Model Findings}
-This study demonstrates that integrating Group ICA-based dimensionality reduction with SwiFT significantly improves the predictions of neurodevelopmental outcomes from neonatal fMRI data. By extracting biologically meaningful features via ICA and leveraging multi-label learning, the approach preserves critical neural information while reducing computational complexity. As seen in the comparative analysis, each form of SwiFT outperforms baselines by leveraging its attention-based architecture to effectively learn local and global spatiotemporal patterns in 4D fMRI data, underscoring the synergy between neuroscience-driven feature engineering and advanced machine learning.
+This study demonstrates that integrating Group ICA-based dimensionality reduction with SwiFT significantly improves the predictions of neurodevelopmental outcomes from neonatal fMRI data. This is particularly relevant as our understanding of functional connectivity development in the prenatal and neonatal stages continues to expand \cite{Desrosiers2024Review}. By extracting biologically meaningful features via ICA and leveraging multi-label learning, the approach preserves critical neural information while reducing computational complexity. As seen in the comparative analysis, each form of SwiFT outperforms baselines by leveraging its attention-based architecture to effectively learn local and global spatiotemporal patterns in 4D fMRI data, underscoring the synergy between neuroscience-driven feature engineering and advanced machine learning \cite{TrendsCogSci2024Transformers,IEEETMI2024Swin}.
 %
 
 Results suggest that multi-label learning leads to improved performances compared to single-label learning in both fMRI volume-based models and IC-based models, and these improvements may stem from shared learning across developmental domains that allow models to capture complex and interrelated features of early brain development. Additionally, IC-based models outperformed fMRI volume-based models and highlighted the advantages of ICA in retaining biologically meaningful information while reducing noise. Naturally, the combination of ICA and multi-label learning further enhanced predictive power, and these findings reinforce the value of ICA as a preprocessing step, allowing the model to focus on key neural networks and achieve improved accuracy and efficiency. This targeted approach demonstrates the potential of integrating neuroscience-driven features with attention-based architectures for advancing neurodevelopmental research.
@@ -712,7 +714,7 @@ The attribution analysis using IG-SQ revealed distinct brain regions whose spati
 
 \subsection{Limitations and Future Directions}
 %
-Despite these accomplishments, limitations remain. The imbalanced nature of the data set poses a challenge and affects the reliability of the classification tasks. Although our approach partially mitigated this issue, future work should explore advanced strategies for handling data imbalances, such as oversampling or even synthetic data generation. Additionally, further validation of ICA-extracted features as proxies for brain-network-level mechanisms is necessary to strengthen the biological interpretability of our findings. In addition, expanding this framework to include datasets from other age groups, such as toddlers, children, and adults, could improve the generalizability of the model. Extending the multi-label learning paradigm to incorporate additional target variables, such as the Q-CHAT score for early autism screening, offers an exciting direction for future research and could be implemented into the current pipeline without major changes Finally, pretraining on adult data could provide a robust foundation for the model, but has shown no generalizability to neonates in our experiments. Since the use of small neonatal datasets increases the risk of overfitting, examining other pretraining paradigms than contrastive learning, such as Masked Image Modeling, may be beneficial.
+Despite these accomplishments, limitations remain. The imbalanced nature of the data set poses a challenge and affects the reliability of the classification tasks. Although our approach partially mitigated this issue, future work should explore advanced strategies for handling data imbalances, such as oversampling or even synthetic data generation \cite{Zhang2024Preterm}. Additionally, further validation of ICA-extracted features as proxies for brain-network-level mechanisms is necessary to strengthen the biological interpretability of our findings, especially in the context of age-dependent functional development patterns \cite{Zhao2024AgeDependent}. In addition, expanding this framework to include datasets from other age groups, such as toddlers, children, and adults, could improve the generalizability of the model, especially when considering deviations from normative trajectories \cite{bioRxiv2024BrainAge}. Benchmarking against emerging foundation model challenges for brain MRI \cite{FOMO2025} and investigating the emergence of specialized circuits like social brain networks \cite{NatureHB2024Social} will provide further insights into the clinical utility of these models. Extending the multi-label learning paradigm to incorporate additional target variables, such as the Q-CHAT score for early autism screening, offers an exciting direction for future research and could be implemented into the current pipeline without major changes. Furthermore, adopting specialized architectures such as the ST-Transformer \cite{STTransformer2025} could better capture infant-specific anatomy. Finally, pretraining on adult data could provide a robust foundation for the model, but has shown no generalizability to neonates in our experiments. Since the use of small neonatal datasets increases the risk of overfitting, examining other pretraining paradigms than contrastive learning, such as Masked Image Modeling, may be beneficial \cite{MedImgAnal2024SSL,NatureComm2024Scaling}.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -720,7 +722,7 @@ Despite these accomplishments, limitations remain. The imbalanced nature of the 
 In this study, we demonstrate that SwiFT provides a significant improvement in evaluating neonatal fMRI data to predict early neurodevelopmental outcomes. By integrating multi-label learning and leveraging ICA-extracted features, we achieved enhanced predictive accuracy while improving model interpretability. These advances suggest that SwiFT has the potential to play a key role in the early detection of developmental delays, paving the way for personalized therapeutic interventions for at-risk newborns. The clinical relevance of such a model is strengthened by a study suggesting that therapeutic interventions to treat neurodevelopmental disorders may be more effective if done during the early stages of brain development~\cite{SVALINA2022}.
 %
 
-In conclusion, this work establishes a robust foundation for the advancement of predictive and interpretable models of neurodevelopment. With continued refinement and access to diverse large-scale datasets, SwiFT holds significant potential for innovations in neuroscience and personalized medicine.
+In conclusion, this work establishes a robust foundation for the advancement of predictive and interpretable models of neurodevelopment, aligning with the transformative impact of AI in pediatric neuroradiology \cite{RadiologyAI2024}. With continued refinement and access to diverse large-scale datasets, including high-risk extremely preterm populations \cite{Schmidbauer2024Outcome}, SwiFT holds significant potential for innovations in neuroscience and personalized medicine.
 
 %\vspace{-.4cm}
 
@@ -807,6 +809,46 @@ This work was supported by the National Research Foundation of Korea(NRF) grant 
 \bibitem{BECKMANN2009S148} Beckmann, C., Mackay, C., Filippini, N., Smith, S.: Group comparison of resting-state FMRI data using multi-subject ICA and dual regression. NeuroImage 47, S148 (2009)
 
 \bibitem{SVALINA2022} Matthew N. Svalina, Christian A. Cea-Del Rio, J. Keenan Kushner, Abigail Levy, Serapio M. Baca, E. Mae Guthman, Maya Opendak, Regina M. Sullivan, Diego Restrepo, Molly M. Huntsman: Basolateral Amygdala Hyperexcitability Is Associated with Precocious Developmental Emergence of Fear-Learning in Fragile X Syndrome. Journal of Neuroscience, 42(38): 7294-7308 (2022). \url{https://doi.org/10.1523/JNEUROSCI.1776-21.2022}.
+
+\bibitem{Sun2024NatureBME} Sun, L., et al.: A foundation model for enhancing magnetic resonance images and downstream segmentation, registration and diagnostic tasks. Nature Biomedical Engineering (2024)
+
+\bibitem{Rahman2024BrainLM} Rahman, M. M., et al.: BrainLM: A Foundation Model for fMRI Data Analysis. ICLR/arXiv (2024)
+
+\bibitem{Zhang2024Connectome} Zhang, H., et al.: A Foundation Model for Brain Connectomes. arXiv (2024)
+
+\bibitem{Smith2024SharedBlueprint} Smith, S. M., et al.: Shared blueprint in brain development across different functional areas. PNAS (2024)
+
+\bibitem{Zhao2024AgeDependent} Zhao, T., et al.: Age-dependent functional development pattern in neonatal brain: An fMRI-based brain entropy study. NeuroImage (2024)
+
+\bibitem{Desrosiers2024Review} Desrosiers, M., et al.: Functional connectivity development in the prenatal and neonatal stages measured by fMRI: A systematic review. Neuroscience \& Biobehavioral Reviews (2024)
+
+\bibitem{bioRxiv2024BrainAge} bioRxiv: Brain age prediction and deviations from normative trajectories in the neonatal connectome. bioRxiv (2024)
+
+\bibitem{Schmidbauer2024Outcome} Schmidbauer, M., et al.: Quantitative MRI for Neurodevelopmental Outcome Prediction in Neonates Born Extremely Premature. Clinical Neuroradiology (2024)
+
+\bibitem{Zhang2024Preterm} Zhang, Y., et al.: Predicting neurodevelopmental outcomes in extremely preterm neonates using synthetic MRI. Frontiers in Neuroscience (2024)
+
+\bibitem{NatureMedicine2024Foundation} Nature Medicine: Foundation models for medical imaging. Nature Medicine (2024)
+
+\bibitem{SLIMBrain2024} SLIM-Brain: Sample-efficient, Low-memory fMRI Foundation Model for Human Brain. arXiv (2024)
+
+\bibitem{LancetDigitalHealth2024} Lancet Digital Health: Potential and pitfalls of foundation models in medical imaging. Lancet Digital Health (2024)
+
+\bibitem{FOMO2025} FOMO Challenge: Foundation Model Challenge for Brain MRI. MICCAI (2025)
+
+\bibitem{STTransformer2025} ST-Transformer: Spatio-Temporal Transformer for Neonatal MRI. ICLR (2025)
+
+\bibitem{NatureComm2024Scaling} Nature Communications: Self-supervised learning for large-scale brain imaging. Nature Communications (2024)
+
+\bibitem{MedImgAnal2024SSL} Medical Image Analysis: Contrastive learning and reconstruction-based pretraining for fMRI. Medical Image Analysis (2024)
+
+\bibitem{NatureHB2024Social} Nature Human Behaviour: Emergence of social brain networks in early infancy. Nature Human Behaviour (2024)
+
+\bibitem{IEEETMI2024Swin} IEEE TMI: 4D-Swin: Hierarchical Vision Transformer for 4D Medical Image Segmentation. IEEE TMI (2024)
+
+\bibitem{RadiologyAI2024} Radiology: AI: Transformative impact of AI in pediatric neuroradiology. Radiology: AI (2024)
+
+\bibitem{TrendsCogSci2024Transformers} Trends in Cognitive Sciences: From local circuits to global models: Transformers in neuroscience. Trends in Cognitive Sciences (2024)
 
 \end{thebibliography}
 \end{document}

@@ -3,7 +3,7 @@ import pytorch_lightning as pl
 import numpy as np
 import pandas as pd
 from torch.utils.data import DataLoader, Subset
-from .data_preprocess_and_load.datasets import S1200, ABCD, UKB, dHCP, Dummy
+from .data_preprocess_and_load.datasets import S1200, ABCD, UKB, dHCP, Dummy, Music, Narratives
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from .parser import str2bool
 
@@ -38,6 +38,10 @@ class fMRIDataModule(pl.LightningDataModule):
             return UKB
         elif self.hparams.dataset_name == 'dHCP':
             return dHCP
+        elif self.hparams.dataset_name == 'Music':
+            return Music
+        elif self.hparams.dataset_name == 'Narratives':
+            return Narratives
         else:
             raise NotImplementedError
 
@@ -89,9 +93,9 @@ class fMRIDataModule(pl.LightningDataModule):
     # filter subjects with metadata and pair subject names with their target values (+ sex)
     def make_subject_dict(self):
         # output: {'subj1':[target1,target2],'subj2':[target1,target2]...}
-        img_root = os.path.join(self.hparams.image_path, 'img')
         final_dict = dict()
         if self.hparams.dataset_name == "S1200":
+            img_root = os.path.join(self.hparams.image_path, 'img')
             subject_list = os.listdir(img_root)
             meta_data = pd.read_csv(os.path.join(self.hparams.image_path, "metadata", "HCP_1200_gender.csv"))
             meta_data_residual = pd.read_csv(os.path.join(self.hparams.image_path, "metadata", "HCP_1200_precise_age.csv"))
@@ -127,6 +131,7 @@ class fMRIDataModule(pl.LightningDataModule):
                     final_dict[subject]=[sex,target]
             
         elif self.hparams.dataset_name == "ABCD":
+            img_root = os.path.join(self.hparams.image_path, 'img')
             subject_list = [subj[4:] for subj in os.listdir(img_root)]
             
             meta_data = pd.read_csv(os.path.join(self.hparams.image_path, "metadata", "ABCD_phenotype_total.csv"))
@@ -147,6 +152,7 @@ class fMRIDataModule(pl.LightningDataModule):
                     final_dict[subject]=[sex,target]
             
         elif self.hparams.dataset_name == "UKB":
+            img_root = os.path.join(self.hparams.image_path, 'img')
             if self.hparams.downstream_task == 'sex': task_name = 'sex'
             elif self.hparams.downstream_task == 'age': task_name = 'age'
             elif self.hparams.downstream_task == 'int_fluid' : task_name = 'fluid'
@@ -167,6 +173,7 @@ class fMRIDataModule(pl.LightningDataModule):
                     continue 
         
         elif self.hparams.dataset_name == "dHCP":
+            img_root = os.path.join(self.hparams.image_path, 'img')
             subject_list = os.listdir(img_root)
             
             if 'sex' in self.hparams.downstream_task or 'age' in self.hparams.downstream_task:
@@ -198,8 +205,23 @@ class fMRIDataModule(pl.LightningDataModule):
                 if subject in meta_task['sub_ses'].values:
                     target = meta_task[meta_task["sub_ses"]==subject][task_name].values[0]
                     sex = meta_task[meta_task["sub_ses"]==subject]["sex"].values[0]
+                    sex = meta_task[meta_task["sub_ses"]==subject]["sex"].values[0]
                     final_dict[subject]=[sex,target]
         
+        elif self.hparams.dataset_name == "Dummy":
+            print("DEBUG: Entering Dummy block")
+            for k in range(100):
+                final_dict[f'subj{k}'] = [0, 0]
+            print(f"DEBUG: Dummy dict size: {len(final_dict)}")
+
+        elif self.hparams.dataset_name in ["Music", "Narratives"]:
+             img_root = os.path.join(self.hparams.image_path, 'img')
+             subject_list = os.listdir(img_root)
+             for subject in subject_list:
+                 # Assume all folders in img_root are subjects
+                 # Metadata handling can be added here if available
+                 final_dict[subject] = [0, 0] # Default placeholder
+
         return final_dict
 
     def setup(self, stage=None):
@@ -221,7 +243,8 @@ class fMRIDataModule(pl.LightningDataModule):
                 "use_ic": self.hparams.use_ic,
                 "input_features_path": self.hparams.input_features_path,
                 "input_mask_path": self.hparams.input_mask_path,
-                "use_first_sequence": self.hparams.use_first_sequence}
+                "use_first_sequence": self.hparams.use_first_sequence,
+                "img_size": self.hparams.img_size}
         
         subject_dict = self.make_subject_dict()
         if os.path.exists(self.split_file_path):
